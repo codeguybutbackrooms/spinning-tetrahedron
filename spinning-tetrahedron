@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Spinning ASCII Tetrahedron (Large)</title>
+  <style>
+    body {
+      background: black;
+      color: white;
+      font-family: monospace;
+      margin: 0;
+      overflow: hidden;
+    }
+    pre {
+      font-size: 7px;        /* smaller font so the grid fills the view */
+      line-height: 7px;
+      white-space: pre;
+      margin: 0;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      user-select: none;
+    }
+  </style>
+</head>
+<body>
+  <pre id="ascii"></pre>
+
+  <script>
+    const canvasSize = 80;      // doubled from 40
+    const output = document.getElementById("ascii");
+    const perspective = 5;
+    const speedX = 0.03;
+    const speedY = 0.02;
+
+    let angleX = 0;
+    let angleY = 0;
+
+    const vertices = [
+      [1, 1, 1],
+      [-1, -1, 1],
+      [-1, 1, -1],
+      [1, -1, -1]
+    ];
+
+    const edges = [
+      [0, 1], [0, 2], [0, 3],
+      [1, 2], [1, 3],
+      [2, 3]
+    ];
+
+    function rotateAndProject([x, y, z]) {
+      // Y-axis rotation
+      let cosY = Math.cos(angleY), sinY = Math.sin(angleY);
+      let x1 = x * cosY - z * sinY;
+      let z1 = x * sinY + z * cosY;
+
+      // X-axis rotation
+      let cosX = Math.cos(angleX), sinX = Math.sin(angleX);
+      let y1 = y * cosX - z1 * sinX;
+      let z2 = y * sinX + z1 * cosX;
+
+      // Perspective projection
+      let xProj = x1 / (z2 + perspective);
+      let yProj = y1 / (z2 + perspective);
+
+      // Map to screen
+      let screenX = Math.round((xProj + 1) * canvasSize / 2);
+      let screenY = Math.round((yProj + 1) * canvasSize / 2);
+      return [screenX, screenY];
+    }
+
+    function drawLine(x0, y0, x1, y1, grid) {
+      const dx = Math.abs(x1 - x0);
+      const dy = Math.abs(y1 - y0);
+      const sx = x0 < x1 ? 1 : -1;
+      const sy = y0 < y1 ? 1 : -1;
+      let err = dx - dy;
+
+      while (true) {
+        if (x0 >= 0 && x0 < canvasSize && y0 >= 0 && y0 < canvasSize) {
+          grid[y0][x0] = "#";
+        }
+        if (x0 === x1 && y0 === y1) break;
+        let e2 = 2 * err;
+        if (e2 > -dy) { err -= dy; x0 += sx; }
+        if (e2 < dx)  { err += dx; y0 += sy; }
+      }
+    }
+
+    function drawFrame() {
+      const grid = Array.from({ length: canvasSize }, () =>
+        Array(canvasSize).fill(" ")
+      );
+
+      const projected = vertices.map(rotateAndProject);
+
+      for (const [i, j] of edges) {
+        const [x0, y0] = projected[i];
+        const [x1, y1] = projected[j];
+        drawLine(x0, y0, x1, y1, grid);
+      }
+
+      output.textContent = grid.map(row => row.join("")).join("\n");
+
+      angleX += speedX;
+      angleY += speedY;
+
+      requestAnimationFrame(drawFrame);
+    }
+
+    drawFrame();
+  </script>
+</body>
+</html>
