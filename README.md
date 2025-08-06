@@ -1,6 +1,6 @@
 # Spinning Tetrahedron
 
-This demo renders a spinning **tetrahedron** (a triangular pyramid) in pure ASCII. It uses only JavaScript with basic linear algebra, trigonometry, and a 2D character buffer—no graphics libraries.
+This demo renders a spinning **tetrahedron** (a triangular pyramid) in pure ASCII. It uses only JavaScript with basic linear algebra, trigonometry, and a 2D character buffer, no graphics libraries.
 
 ## Tetrahedron
 
@@ -38,11 +38,23 @@ Each [i,j] draws a line between vertices[i] and vertices[j].
 ## Rotation
 The shape spins continuously around both the Y-axis and X-axis:
 1. Y-axis rotation:
+
+$`\begin{bmatrix}
+\cos(\theta) & 0 & -\sin(\theta) \\
+0 & 1 & 0 \\
+\sin(\theta) & 0 & \cos(\theta)
+\end{bmatrix}`$
+
 ```js
 x1 = x*cosY - z*sinY;
 z1 = x*sinY + z*cosY;
 ```
 2. X-axis rotation (vertical tilt)
+$`\begin{bmatrix}
+1 & 0 & 0 \\
+0 & \cos(\phi) & -\sin(\phi) \\
+0 & \sin(\phi) & \cos(\phi)
+\end{bmatrix}`$
 ```js
 y1 = y*cosX - z1*sinX;
 z2 = y*sinX + z1*cosX;
